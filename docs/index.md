@@ -33,9 +33,24 @@ $report = (new Importer($store))->import(new Feed('/tmp/irigo.zip'), 'angers', [
 - The import runs in **one transaction**: the feed's earlier rows go, the new ones come; readers
   keep seeing the previous import until it is committed (SQLite runs in WAL mode). Several feeds
   share a store, each under its name (`[a-z0-9._-]`, 64 characters at most).
-- Read: `agency.txt`, `stops.txt`, `routes.txt`, `trips.txt`, `stop_times.txt`, `calendar.txt`,
-  `calendar_dates.txt`, `feed_info.txt`. Not read: `shapes.txt`, `frequencies.txt`,
-  `transfers.txt`, `pathways.txt`, fares, translations.
+- Read: `agency.txt`, `stops.txt`, `routes.txt`, `trips.txt` (with each trip's `shape_id`),
+  `shapes.txt` (the points of the trips' shapes only), `stop_times.txt`, `calendar.txt`,
+  `calendar_dates.txt`, `feed_info.txt`. Not read: `frequencies.txt`, `transfers.txt`,
+  `pathways.txt`, fares, translations. A store made before shapes were read gets its
+  `gtfs_trip.shape_id` column and its `gtfs_shape` table from `createSchema()`.
+- **A part of a feed** (`FeedFilter`, the importer's fifth argument): routes chosen by agency,
+  route type, identifier or short name (each list given narrows the choice; `excludeRoutes` leaves
+  out by identifier or short name), and only what they need - their trips, those trips' stop
+  times, the stops they call at with their stations, the services they run on, their shapes. The
+  routes, trips and stop times are read once before the transaction to choose. A regional feed is
+  then imported for a few lines:
+
+  ```php
+  // RATP's metro and trams in Île-de-France Mobilités' feed (8.7 million stop times, 1.2 kept)
+  $filter = new FeedFilter(agencies: ['IDFM:Operator_100', 'IDFM:Operator_1047'], routeTypes: [0, 1], excludeRoutes: ['ORLYVAL']);
+  (new Importer($store))->import(new Feed('/tmp/IDFM-gtfs.zip'), 'ratp', filter: $filter);
+  // FeedFilter::fromArray(['agencies' => '...', 'route_types' => [0, 1], 'exclude' => 'ORLYVAL']) from a configuration
+  ```
 - Times are kept as seconds of the service day (`25:10:05` is 90605), dates as `YYYYMMDD`
   integers, calendars' weekdays as a bit mask.
 - Derived at import, for what the provider reads fast: each trip's first and last call (a

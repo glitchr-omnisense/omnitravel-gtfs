@@ -265,6 +265,23 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         return \array_slice($positions, 0, $query->limit);
     }
 
+    /**
+     * A trip's shape: its points in order as [latitude, longitude]; none when the feed gives none.
+     *
+     * @return list<array{0: float, 1: float}>
+     */
+    public function shape(string $tripId): array
+    {
+        try {
+            $row = $this->store->row('SELECT shape_id FROM gtfs_trip WHERE feed = ? AND trip_id = ?', [$this->feed, $tripId]);
+        } catch (\PDOException) {
+            return [];
+        }
+        $shape = null === $row ? null : self::text($row['shape_id'] ?? null);
+
+        return null === $shape ? [] : $this->shapePoints($shape);
+    }
+
     public function stop(string $id): ?Stop
     {
         $row = $this->store->row('SELECT * FROM gtfs_stop WHERE feed = ? AND stop_id = ?', [$this->feed, $id]);
@@ -474,6 +491,18 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         }
 
         return array_map('strval', array_keys($family));
+    }
+
+    /** @return list<array{0: float, 1: float}> */
+    private function shapePoints(string $shape): array
+    {
+        try {
+            $rows = $this->store->rows('SELECT lat, lon FROM gtfs_shape WHERE feed = ? AND shape_id = ? ORDER BY seq', [$this->feed, $shape]);
+        } catch (\PDOException) {
+            return [];
+        }
+
+        return array_map(static fn (array $row) => [Cast::float($row['lat']), Cast::float($row['lon'])], $rows);
     }
 
     /** @param list<TripUpdate> $updates */

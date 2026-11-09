@@ -15,7 +15,7 @@ use Omnitravel\Exception\InvalidConfigException;
  */
 final class Store
 {
-    public const TABLES = ['gtfs_feed', 'gtfs_agency', 'gtfs_stop', 'gtfs_route', 'gtfs_trip', 'gtfs_stop_time', 'gtfs_calendar', 'gtfs_calendar_date', 'gtfs_route_stop', 'gtfs_stop_route'];
+    public const TABLES = ['gtfs_feed', 'gtfs_agency', 'gtfs_stop', 'gtfs_route', 'gtfs_trip', 'gtfs_stop_time', 'gtfs_calendar', 'gtfs_calendar_date', 'gtfs_route_stop', 'gtfs_stop_route', 'gtfs_shape'];
 
     private bool $schemaChecked = false;
 
@@ -67,15 +67,20 @@ final class Store
             'gtfs_agency' => "feed $key, agency_id $key, name $text, url VARCHAR(500), timezone VARCHAR(64), phone VARCHAR(64), PRIMARY KEY (feed, agency_id)",
             'gtfs_stop' => "feed $key, stop_id $key, code VARCHAR(64), name $text, search $text, lat $real, lon $real, location_type $int, parent VARCHAR(191), platform VARCHAR(64), timezone VARCHAR(64), wheelchair $int, PRIMARY KEY (feed, stop_id)",
             'gtfs_route' => "feed $key, route_id $key, agency_id VARCHAR(191), short_name VARCHAR(64), long_name $text, type $int, color VARCHAR(8), text_color VARCHAR(8), url VARCHAR(500), sort_order $int, PRIMARY KEY (feed, route_id)",
-            'gtfs_trip' => "feed $key, trip_id $key, route_id VARCHAR(191), service_id VARCHAR(191), headsign $text, short_name VARCHAR(64), direction_id $int, PRIMARY KEY (feed, trip_id)",
+            'gtfs_trip' => "feed $key, trip_id $key, route_id VARCHAR(191), service_id VARCHAR(191), headsign $text, short_name VARCHAR(64), direction_id $int, shape_id VARCHAR(191), PRIMARY KEY (feed, trip_id)",
             'gtfs_stop_time' => "feed $key, trip_id $key, seq $int NOT NULL, stop_id VARCHAR(191), arrival $int, departure $int, headsign $text, pickup $int, drop_off $int, is_first $int, is_last $int, PRIMARY KEY (feed, trip_id, seq)",
             'gtfs_calendar' => "feed $key, service_id $key, days $int, start_date $int, end_date $int, PRIMARY KEY (feed, service_id)",
             'gtfs_calendar_date' => "feed $key, service_id $key, date $int NOT NULL, type $int, PRIMARY KEY (feed, service_id, date)",
             'gtfs_route_stop' => "feed $key, route_id $key, direction VARCHAR(16) NOT NULL, seq $int NOT NULL, stop_id VARCHAR(191), PRIMARY KEY (feed, route_id, direction, seq)",
             'gtfs_stop_route' => "feed $key, stop_id $key, route_id $key, PRIMARY KEY (feed, stop_id, route_id)",
+            'gtfs_shape' => "feed $key, shape_id $key, seq $int NOT NULL, lat $real, lon $real, dist $real, PRIMARY KEY (feed, shape_id, seq)",
         ];
         foreach ($tables as $table => $columns) {
-            $this->pdo->exec("CREATE TABLE IF NOT EXISTS $table ($columns)".('gtfs_stop_time' === $table ? $compact : ''));
+            $this->pdo->exec("CREATE TABLE IF NOT EXISTS $table ($columns)".(\in_array($table, ['gtfs_stop_time', 'gtfs_shape'], true) ? $compact : ''));
+        }
+        // A store made before trips had their shape gets the column.
+        if (!\in_array('shape_id', $this->columns('gtfs_trip'), true)) {
+            $this->pdo->exec('ALTER TABLE gtfs_trip ADD COLUMN shape_id VARCHAR(191)');
         }
         $indexes = [
             'gtfs_stop_place' => 'gtfs_stop (feed, lat, lon)',
@@ -206,6 +211,16 @@ final class Store
         $this->pdo->prepare('INSERT INTO '.$table.' ('.implode(', ', $columns).') VALUES '.implode(', ', array_fill(0, \count($rows), $one)))->execute(array_merge(...$rows));
 
         return \count($rows);
+    }
+
+    /** @return list<string> a table's columns */
+    private function columns(string $table): array
+    {
+        $rows = $this->isSqlite()
+            ? $this->rows("PRAGMA table_info($table)")
+            : $this->rows('SELECT column_name AS name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ?', [$table]);
+
+        return array_map(static fn (array $row) => Cast::string($row['name']), $rows);
     }
 
     /** @return list<string> */

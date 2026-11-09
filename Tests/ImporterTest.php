@@ -19,7 +19,7 @@ final class ImporterTest extends GtfsTestCase
             $told[] = $file;
         });
 
-        self::assertSame(['agency.txt' => 1, 'stops.txt' => 7, 'routes.txt' => 2, 'trips.txt' => 7, 'calendar.txt' => 2, 'calendar_dates.txt' => 2, 'stop_times.txt' => 26, 'route stops' => 11, 'stop routes' => 8], $report->rows);
+        self::assertSame(['agency.txt' => 1, 'stops.txt' => 7, 'routes.txt' => 2, 'trips.txt' => 7, 'shapes.txt' => 0, 'calendar.txt' => 2, 'calendar_dates.txt' => 2, 'stop_times.txt' => 26, 'route stops' => 11, 'stop routes' => 8], $report->rows);
         self::assertSame(array_keys($report->rows), $told);
         self::assertSame([1, 0], array_map(Cast::int(...), array_values($store->row("SELECT is_first, is_last FROM gtfs_stop_time WHERE feed = 'test' AND trip_id = 'A1' AND seq = 1") ?? [])));
         self::assertSame(90000, Cast::int($store->row("SELECT departure FROM gtfs_stop_time WHERE feed = 'test' AND trip_id = 'A9' AND seq = 3")['departure'] ?? 0), '25:00:00');
