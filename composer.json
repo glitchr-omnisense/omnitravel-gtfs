@@ -1,20 +1,50 @@
 {
     "name": "omnitravel/gtfs",
     "type": "library",
-    "description": "Reserved, not released yet: GTFS and GTFS-Realtime for omnisense/omnitravel.",
+    "description": "Omnitravel's GTFS, under any PHP host: any network that publishes a static GTFS feed, imported into a store of its own (SQLite or MySQL through PDO) - its stops near a point or by name, its lines with their colours and their stops in order, a stop's next departures and arrivals from the feed's calendars - and, where the network publishes GTFS-Realtime, its trip updates (delays, cancellations, skipped stops) laid over them and its vehicles' positions, read from Protocol Buffers by hand.",
+    "keywords": ["gtfs", "gtfs-realtime", "transit", "public-transport", "timetable", "departures", "real-time", "protobuf", "sqlite", "framework-agnostic", "omnitravel"],
     "homepage": "https://github.com/glitchr-omnisense/omnitravel-gtfs",
     "license": "MIT",
     "authors": [
         {
-            "name": "Marco Meyer"
+            "name": "Marco Meyer",
+            "email": "marco.meyer@glitchr.io"
         }
     ],
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "omnisense/omnitravel": "^1.0@dev",
+        "symfony/http-client": "^6.4|^7.0|^8.0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.0"
+    },
+    "suggest": {
+        "ext-pdo_sqlite": "A store in an SQLite file",
+        "ext-pdo_mysql": "A store in MySQL or MariaDB",
+        "ext-zip": "Reads a feed's archive with ZipArchive (PharData reads it otherwise)"
+    },
+    "autoload": {
+        "psr-4": {
+            "Omnitravel\\Gtfs\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Omnitravel\\Gtfs\\Tests\\": "Tests/"
+        }
     },
     "extra": {
         "branch-alias": {
             "dev-1.x": "1.x-dev"
         }
+    },
+    "config": {
+        "sort-packages": true
     }
 }

@@ -1,0 +1,2 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_phone
+TEST,Example Transit,https://transit.example.org/,Europe/Paris,+33 1 00 00 00 00

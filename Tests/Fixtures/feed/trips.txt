@@ -1,0 +1,8 @@
+route_id,service_id,trip_id,trip_headsign,trip_short_name,direction_id
+A,WEEK,A1,Roseraie,,0
+A,WEEK,A2,Roseraie,,0
+A,WEEK,A3,Molière,,1
+A,WEEK,A9,Roseraie,,0
+A,SUN,A5,Roseraie,,0
+3,WEEK,B1,Saint-Barthélemy,,0
+3,EXTRA,B2,Saint-Barthélemy,,0

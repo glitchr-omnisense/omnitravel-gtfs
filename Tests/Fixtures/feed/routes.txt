@@ -1,0 +1,3 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color,route_sort_order
+3,TEST,3,Gare - Saint-Barthélemy,3,F18700,,2
+A,TEST,A,Molière - Roseraie,0,e2001a,FFFFFF,1
