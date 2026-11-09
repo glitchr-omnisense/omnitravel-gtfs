@@ -1,0 +1,26 @@
+{
+    "$schema": "https://github.com/glitchr-omnisense/contracts/blob/1.x/resources/usage-policy.schema.json",
+    "provider": "gtfs",
+    "rateLimits": null,
+    "rights": {
+        "commercial": "unknown",
+        "openSourceRequired": null,
+        "caching": {"permission": "unknown", "maxTtl": null},
+        "storage": "unknown",
+        "redistribution": "unknown",
+        "attribution": {"required": false, "text": null, "url": null, "where": []},
+        "licence": null
+    },
+    "requirements": {
+        "key": false,
+        "userAgent": {"required": false, "pattern": null}
+    },
+    "provenance": {
+        "terms": "https://gtfs.org/documentation/schedule/reference/",
+        "policy": null,
+        "verifiedAt": "2026-11-10",
+        "declaredBy": "maintainer",
+        "contact": null,
+        "notes": "Per feed: each network publishes its GTFS and GTFS-Realtime under its own licence and terms, so a feed's policy is the site's to give where it configures the feed - its licence (option licence: \"ODbL-1.0\", \"etalab-2.0\") and the credit its licence asks (option attribution), shown by Capabilities and Registry::policy(); a tightening (option policy: a GTFS-Realtime feed's rate limit, the licence's rights) on top. The static feed is read from the site's own store: no call is counted. A GTFS-Realtime feed's limits are its publisher's, unknown here."
+    }
+}
