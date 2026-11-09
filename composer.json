@@ -1,0 +1,20 @@
+{
+    "name": "omnitravel/gtfs",
+    "type": "library",
+    "description": "Reserved, not released yet: GTFS and GTFS-Realtime for omnisense/omnitravel.",
+    "homepage": "https://github.com/glitchr-omnisense/omnitravel-gtfs",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marco Meyer"
+        }
+    ],
+    "require": {
+        "php": ">=8.2"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-1.x": "1.x-dev"
+        }
+    }
+}
