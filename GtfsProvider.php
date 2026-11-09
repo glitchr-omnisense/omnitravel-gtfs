@@ -5,6 +5,9 @@ namespace Omnitravel\Gtfs;
 use Omnitravel\Capabilities;
 use Omnitravel\Exception\NotSupportedException;
 use Omnitravel\Exception\OmnitravelException;
+use Omnitravel\Gtfs\Estimate\Call;
+use Omnitravel\Gtfs\Estimate\EstimatedVehicle;
+use Omnitravel\Gtfs\Estimate\PositionEstimator;
 use Omnitravel\Gtfs\Realtime\FeedMessage;
 use Omnitravel\Gtfs\Realtime\TripUpdate;
 use Omnitravel\Gtfs\Siri\SiriLite;
@@ -263,6 +266,90 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         }
 
         return \array_slice($positions, 0, $query->limit);
+    }
+
+    /**
+     * Where a line's vehicles are estimated to be at a moment (now by
+     * default), for networks that publish no positions: each trip of the
+     * line running then - from the services of the day and of the day
+     * before - its calls with the times its trip update predicts (or the
+     * timetable's plus the last delay it gave), placed by PositionEstimator
+     * along its shape. A trip cancelled by real time is left out.
+     *
+     * @return list<EstimatedVehicle>
+     */
+    public function estimatedVehicles(string $lineId, ?\DateTimeImmutable $at = null): array
+    {
+        $now = ($at ?? new \DateTimeImmutable())->getTimestamp();
+        $timezone = $this->timeZone();
+        $updates = null !== $this->tripUpdatesUrl ? $this->tripUpdates() : [];
+        $line = $this->allLines()[$lineId] ?? null;
+        $shapes = [];
+        $vehicles = [];
+        foreach ([-1, 0] as $offset) {
+            $day = (new \DateTimeImmutable('@'.$now))->setTimezone($timezone)->setTime(12, 0)->modify(\sprintf('%+d day', $offset));
+            $base = $day->getTimestamp() - 43200;
+            $services = array_keys($this->activeServices($day));
+            if ([] === $services) {
+                continue;
+            }
+            $moment = $now - $base;
+            // Running then by the timetable, or up to half an hour late.
+            $trips = $this->store->rows('SELECT t.trip_id, t.headsign, t.direction_id, t.shape_id FROM gtfs_trip t
+                JOIN gtfs_stop_time f ON f.feed = t.feed AND f.trip_id = t.trip_id AND f.is_first = 1
+                JOIN gtfs_stop_time l ON l.feed = t.feed AND l.trip_id = t.trip_id AND l.is_last = 1
+                WHERE t.feed = ? AND t.route_id = ? AND f.departure <= ? AND l.arrival >= ? AND t.service_id IN ('.Store::marks($services).')', [$this->feed, $lineId, $moment + 120, $moment - self::LOOKBACK, ...$services]);
+            foreach ($trips as $trip) {
+                $tripId = Cast::string($trip['trip_id']);
+                $update = null;
+                foreach ($updates[$tripId] ?? [] as $candidate) {
+                    if (null === $candidate->startDate || $candidate->startDate === $day->format('Ymd')) {
+                        $update = $candidate;
+                        break;
+                    }
+                }
+                if (null !== $update && $update->cancelled) {
+                    continue;
+                }
+                $calls = $delays = [];
+                $delay = null;
+                $moved = false;
+                foreach ($this->store->rows('SELECT st.seq, st.stop_id, st.arrival, st.departure, s.lat, s.lon FROM gtfs_stop_time st JOIN gtfs_stop s ON s.feed = st.feed AND s.stop_id = st.stop_id WHERE st.feed = ? AND st.trip_id = ? ORDER BY st.seq', [$this->feed, $tripId]) as $row) {
+                    if (!is_numeric($row['lat'] ?? null) || !is_numeric($row['lon'] ?? null)) {
+                        continue;
+                    }
+                    $arrival = $base + Cast::int($row['arrival']);
+                    $departure = $base + Cast::int($row['departure']);
+                    $call = $update?->at(Cast::int($row['seq']), Cast::string($row['stop_id']));
+                    if (null !== $call && $call->skipped) {
+                        continue;
+                    }
+                    if (null !== $call) {
+                        $delay = $call->delay($arrival, true) ?? $delay;
+                        $moved = true;
+                    }
+                    $tripDelay = null === $update ? null : $update->delay;
+                    $arrivalDelay = null === $call ? ($delay ?? $tripDelay ?? 0) : ($call->delay($arrival, true) ?? $delay ?? 0);
+                    $departureDelay = null === $call ? ($delay ?? $tripDelay ?? 0) : ($call->delay($departure) ?? $arrivalDelay);
+                    $delays[Cast::string($row['stop_id'])] = $arrivalDelay;
+                    $calls[] = new Call(Cast::string($row['stop_id']), new Coordinates((float) $row['lat'], (float) $row['lon']), $arrival + $arrivalDelay, max($arrival + $arrivalDelay, $departure + $departureDelay));
+                }
+                $shapeId = self::text($trip['shape_id'] ?? null);
+                $shape = null === $shapeId ? [] : ($shapes[$shapeId] ??= $this->shapePoints($shapeId));
+                $estimate = PositionEstimator::estimate($calls, $now, $shape);
+                if (null === $estimate) {
+                    continue;
+                }
+                $vehicles[] = new EstimatedVehicle(
+                    $tripId, $line, Cast::string($trip['headsign'] ?? (null === $line ? null : $line->longName) ?? ''),
+                    null === ($trip['direction_id'] ?? null) ? null : Cast::int($trip['direction_id']),
+                    $estimate, $moved || null !== $update?->delay, $moved || null !== $update?->delay ? ($delays[$estimate->to ?? $estimate->from] ?? $delay) : null,
+                    $update?->timestamp,
+                );
+            }
+        }
+
+        return $vehicles;
     }
 
     /**

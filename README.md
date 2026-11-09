@@ -14,6 +14,8 @@ imported into a store of its own (an SQLite file or MySQL, through PDO), and its
 - **vehicles** (`TrackingInterface`): the positions of its vehicle feed, each with its line;
 - **service alerts** (`alerts()`): the GTFS-Realtime alerts in force that concern a board's lines
   and stops, their texts by language;
+- **estimated vehicles** (`estimatedVehicles()`): where a line's vehicles are from their times -
+  real time where it is known - along their shapes, for networks that send no positions;
 - **SIRI Lite**, for networks that publish SIRI rather than GTFS-Realtime (Île-de-France Mobilités'
   PRIM, Strasbourg's CTS): StopMonitoring laid over the timetable, GeneralMessage as alerts.
 

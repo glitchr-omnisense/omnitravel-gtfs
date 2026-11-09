@@ -143,6 +143,19 @@ extended); `area` the box of the feed's stops; `keyless`.
   `urlFor()`: the language asked, then French, English, the first given); `cause`, `effect`,
   `severity` as GTFS-Realtime's names in kebab case (`construction`, `no-service`, `warning`).
   The body is read whatever its `Content-Type` (Angers' alerts come as `application/json`).
+- **Estimated vehicles** (`estimatedVehicles($line, $at)`, an `Estimate\EstimatedVehicle` each),
+  for networks that publish no positions: each trip of the line running at the moment (the
+  services of the day and of the day before, up to half an hour late), its calls with the times its
+  trip update predicts - the call's own, the last one given before it down the trip, or the trip's
+  delay - or the timetable's, a stop skipped by real time left out, a trip cancelled left out. Then
+  `Estimate\PositionEstimator::estimate($calls, $now, $shape)`, a pure function: between its
+  arrival and its departure at a stop the vehicle is at the stop (its dwell); between two stops it
+  is `(now - departure from the previous stop) / (arrival at the next - departure from the
+  previous)` of the way, clamped to 0..1, measured along the trip's shape (each stop projected
+  onto it in order, never backwards; by cumulative distance) or on the straight line between the
+  stops without one; before its first departure and after its last arrival, nowhere. Each
+  vehicle says whether real time moved its times, its delay at its next stop and when its trip
+  update was made: what a map labels "estimated", beside the positions vehicles send.
 - **Vehicles**: positions at 0,0 (no fix) are left out; the line comes from the trip descriptor's
   route, or from the trip in the feed.
 
