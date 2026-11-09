@@ -45,6 +45,19 @@ final class RealtimeTest extends GtfsTestCase
         self::assertTrue($provider->capabilities()->realtime);
     }
 
+    /** Angers' Irigo numbers its real-time calls from 1 where its static feed counts from 0: a call is found by its stop. */
+    public function testACallIsFoundByItsStopWhenTheFeedNumbersItsOwnWay(): void
+    {
+        $call = static fn (int $seq, string $stop, int $delay): string => W::varint(1, $seq).W::bytes(3, W::int32(1, $delay)).W::bytes(4, $stop);
+        $feed = W::bytes(1, W::bytes(1, '2.0'))
+            .W::bytes(2, W::bytes(1, 'a1').W::bytes(3, W::bytes(1, W::bytes(1, 'A1')).W::bytes(2, $call(2, 'MOLI', 0)).W::bytes(2, $call(3, 'RALL', 60)).W::bytes(2, $call(4, 'CENTRAL_1', 240))));
+        $provider = self::provider(['trip_updates_url' => self::TRIP_UPDATES], RecordedHttpClient::routes(['~trip-updates~' => [200, $feed]]));
+
+        $at = static fn (string $stop) => array_values(array_filter($provider->departures(new DepartureQuery($stop, self::at('2026-11-09 07:55'), 5)), static fn (Departure $d) => 'A1' === $d->tripId))[0] ?? null;
+        self::assertSame(240, $at('CENTRAL')?->delay(), 'sequence 3 in the static feed, 4 in the real-time one');
+        self::assertSame(60, $at('RALL')?->delay());
+    }
+
     public function testADelayedCallScheduledBeforeTheMomentAskedIsStillListed(): void
     {
         $departures = self::provider(['trip_updates_url' => self::TRIP_UPDATES], self::http())->departures(new DepartureQuery('CENTRAL', self::at('2026-11-09 08:11'), 2));

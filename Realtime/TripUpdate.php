@@ -48,9 +48,27 @@ final readonly class TripUpdate
      * or the last one before it that gives a time (GTFS-Realtime's
      * propagation of a delay down the trip). A call the feed skips is
      * returned as such.
+     *
+     * The stop's identifier is trusted first: networks number their
+     * real-time calls in their own way (Angers' Irigo counts from 1 where its
+     * static feed counts from 0), so a call is found by its stop when the
+     * update names it, by its sequence otherwise.
      */
     public function at(?int $sequence, string $stopId): ?StopTimeUpdate
     {
+        $named = array_values(array_filter($this->stops, static fn (StopTimeUpdate $update) => null !== $update->stopId));
+        if ([] !== $named && \count($named) === \count($this->stops)) {
+            $before = null;
+            foreach ($this->stops as $update) {
+                if ($stopId === $update->stopId) {
+                    return $update->hasTime() || $update->skipped ? $update : $before;
+                }
+                $before = $update->hasTime() ? $update : ($update->noData ? null : $before);
+            }
+
+            // The stop is not among the updates: earlier on the trip than the first, or after the last.
+            return null !== $sequence && null !== $this->stops[0]->sequence && $sequence > $this->stops[0]->sequence ? $before : null;
+        }
         $before = null;
         foreach ($this->stops as $update) {
             $same = null !== $update->sequence && null !== $sequence ? $update->sequence === $sequence : $update->stopId === $stopId;

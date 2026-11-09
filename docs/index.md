@@ -95,7 +95,9 @@ extended); `area` the box of the feed's stops; `keyless`.
 - **Real time**: one read of the trip updates per `realtime_ttl` for the whole timetable. For each
   call: a cancelled (or deleted) trip cancels it; a `SKIPPED` stop cancels that call; otherwise the
   call's own update, or the last one before it on the trip that gives a time (GTFS-Realtime's
-  propagation), gives the delay - a `time` beats a `delay`, the departure's beats the arrival's; a
+  propagation), gives the delay. A call is found by its stop when the update names its stops, by its
+  sequence otherwise: networks number their real-time calls their own way (Angers' Irigo counts from 1
+  where its static feed counts from 0, which read by sequence put every delay one stop early) - a `time` beats a `delay`, the departure's beats the arrival's; a
   trip's own `delay` is used last. An update naming a `start_date` applies to that service day
   only. Calls scheduled up to 30 minutes before the moment asked are read too, so a late vehicle is
   still listed. When the feed cannot be read, the timetable is answered without it and
