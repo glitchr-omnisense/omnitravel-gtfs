@@ -7,6 +7,8 @@ use Omnitravel\Exception\NotSupportedException;
 use Omnitravel\Exception\OmnitravelException;
 use Omnitravel\Gtfs\Realtime\FeedMessage;
 use Omnitravel\Gtfs\Realtime\TripUpdate;
+use Omnitravel\Gtfs\Siri\SiriLite;
+use Omnitravel\Gtfs\Siri\Visit;
 use Omnitravel\Http\JsonClient;
 use Omnitravel\Model\BoundingBox;
 use Omnitravel\Model\Coordinates;
@@ -71,6 +73,7 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         private readonly array $countries = [],
         private readonly string $name = 'gtfs',
         private readonly ?string $alertsUrl = null,
+        private readonly ?SiriLite $siri = null,
     ) {
     }
 
@@ -96,7 +99,7 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         $modes = array_values(array_unique(array_map(static fn (Line $line) => $line->mode, $this->allLines()), \SORT_REGULAR));
 
         return new Capabilities(
-            timetables: true, arrivals: true, realtime: null !== $this->tripUpdatesUrl, tracking: null !== $this->vehiclePositionsUrl,
+            timetables: true, arrivals: true, realtime: null !== $this->tripUpdatesUrl || true === $this->siri?->monitorsStops(), tracking: null !== $this->vehiclePositionsUrl,
             network: true, nearby: true, stopSearch: true, lines: true, platforms: true,
             modes: $modes, countries: $this->countries, area: $area, attribution: $this->attribution, licence: $this->licence, keyless: true,
         );
@@ -129,6 +132,15 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         foreach (array_unique(array_filter([$this->alertsUrl, $this->tripUpdatesUrl])) as $url) {
             foreach ($this->realtimeFeed($url)->alerts ?? [] as $alert) {
                 $found[$alert->id.'|'.$alert->headerText()] = $alert;
+            }
+        }
+        if (null !== $this->siri && $this->siri->monitorsMessages() && [] !== $lines) {
+            try {
+                foreach ($this->siri->messages($lines) as $alert) {
+                    $found[$alert->id.'|'.$alert->headerText()] = $alert;
+                }
+            } catch (OmnitravelException $e) {
+                $this->realtimeError = $e->getMessage();
             }
         }
         $moment = ($at ?? new \DateTimeImmutable())->getTimestamp();
@@ -212,6 +224,9 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
             if ($offset >= 0 && \count($found) >= $query->limit) {
                 break;
             }
+        }
+        if (null !== $this->siri && $this->siri->monitorsStops() && !$query->arrivals) {
+            $found = $this->withSiri($found, $query, $stops, $fromTs, $endTs);
         }
 
         return \array_slice(Departure::sorted($found), 0, $query->limit);
@@ -376,6 +391,65 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         }
 
         return isset($stops[$id]) ? $stops : [];
+    }
+
+    /**
+     * SIRI's StopMonitoring laid over the timetable: for each line SIRI
+     * announces at the stop, its visits replace the line's scheduled calls
+     * up to the last one announced (a minute's margin); the timetable goes
+     * on after it. A visit's time is SIRI's expected one, its scheduled time
+     * SIRI's aimed one when given (otherwise the expected one: no delay is
+     * made up). When SIRI cannot be read, the timetable stays and
+     * realtimeError() says why.
+     *
+     * @param list<Departure>      $found
+     * @param array<string, Stop>  $stops the stop asked and, for a station, its platforms
+     *
+     * @return list<Departure>
+     */
+    private function withSiri(array $found, DepartureQuery $query, array $stops, int $fromTs, ?int $endTs): array
+    {
+        \assert(null !== $this->siri);
+        $root = $stops[$query->stop];
+        $station = StopKind::Station === $root->kind;
+        try {
+            $visits = $this->siri->visits($query->stop, $station, array_values(array_filter(array_map('strval', array_keys($stops)), static fn (string $id) => $id !== $query->stop)));
+        } catch (OmnitravelException $e) {
+            $this->realtimeError = $e->getMessage();
+
+            return $found;
+        }
+        $lines = $this->allLines();
+        // By line and platform: SIRI may answer for one platform of a station and not the other.
+        $groups = [];
+        foreach ($visits as $visit) {
+            if (null !== $visit->line && null !== $visit->time()) {
+                $stop = isset($stops[(string) $visit->stop]) ? (string) $visit->stop : null;
+                $groups[$visit->line.'|'.$stop][] = $visit;
+            }
+        }
+        $timezone = $this->timeZone();
+        foreach ($groups as $announced) {
+            $line = (string) $announced[0]->line;
+            $platform = isset($stops[(string) $announced[0]->stop]) ? (string) $announced[0]->stop : null;
+            $horizon = max(array_map(static fn (Visit $visit) => (int) $visit->time(), $announced));
+            $found = array_values(array_filter($found, static fn (Departure $d) => $d->line?->id !== $line || (null !== $platform && $d->stop->id !== $platform) || $d->time()->getTimestamp() > $horizon + 60));
+            foreach ($announced as $visit) {
+                $time = (int) $visit->time();
+                $stop = null === $platform ? $root : $stops[$platform];
+                $departure = new Departure(
+                    $stop, $lines[$line] ?? null, $visit->destination,
+                    (new \DateTimeImmutable('@'.($visit->aimed ?? $time)))->setTimezone($timezone), $this->name,
+                    (new \DateTimeImmutable('@'.$time))->setTimezone($timezone), true, $visit->cancelled,
+                    $visit->platform ?? $stop->platform, tripId: $visit->journey,
+                );
+                if (($time >= $fromTs || $visit->atStop) && (null === $endTs || $time <= $endTs) && $query->accepts($departure)) {
+                    $found[] = $departure;
+                }
+            }
+        }
+
+        return $found;
     }
 
     /**

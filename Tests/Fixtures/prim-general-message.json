@@ -1,0 +1,53 @@
+{
+ "Siri": {
+  "ServiceDelivery": {
+   "ResponseTimestamp": "2026-11-09T23:18:12.864Z",
+   "ProducerRef": "IVTR_HET",
+   "ResponseMessageIdentifier": "IVTR_HET:ResponseMessage:fdd033cd-727f-44c4-8fff-de8a290f095c:LOC:",
+   "GeneralMessageDelivery": [
+    {
+     "ResponseTimestamp": "2026-11-09T23:18:12.865Z",
+     "Version": "2.0",
+     "Status": "true",
+     "InfoMessage": [
+      {
+       "FormatRef": "STIF-IDF",
+       "RecordedAtTime": "2026-11-09T11:24:58.351Z",
+       "ItemIdentifier": "RATP-SIV:Item::MSG.IVC.2195554357755419123.1:LOC",
+       "InfoMessageIdentifier": {
+        "value": "RATP-SIV:InfoMessage::MSG.IVC.2195554357755419123:LOC"
+       },
+       "InfoChannelRef": {
+        "value": "Perturbation"
+       },
+       "ValidUntilTime": "2026-11-11T03:45:00.000Z",
+       "Content": {
+        "LineRef": [
+         {
+          "value": "STIF:Line::C01371:"
+         }
+        ],
+        "Message": [
+         {
+          "MessageType": "SHORT_MESSAGE",
+          "MessageText": {
+           "value": "Le 11 novembre, arrêts non desservis à Champs-Élysées – Clemenceau, Franklin D. Roosevelt, George V, Charles de Gaulle – Étoile et Argentine (mesures de sécurité Préf. de Police)",
+           "lang": "fr"
+          }
+         },
+         {
+          "MessageType": "TEXT_ONLY",
+          "MessageText": {
+           "value": "Le 11 novembre, les arrêts ne seront pas desservis à Champs-Élysées – Clemenceau, Franklin D. Roosevelt, George V, Charles de Gaulle – Étoile et Argentine en raison de mesures de sécurité demandées par la Préfecture de Police",
+           "lang": "fr"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

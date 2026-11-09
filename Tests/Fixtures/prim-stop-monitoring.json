@@ -1,0 +1,410 @@
+{
+ "Siri": {
+  "ServiceDelivery": {
+   "ResponseTimestamp": "2026-11-09T23:18:13.685Z",
+   "ProducerRef": "IVTR_HET",
+   "ResponseMessageIdentifier": "IVTR_HET:ResponseMessage:57091b6f-68ea-4dc9-b350-73b957c39106:LOC:",
+   "StopMonitoringDelivery": [
+    {
+     "ResponseTimestamp": "2026-11-09T23:18:13.733Z",
+     "Version": "2.0",
+     "Status": "true",
+     "MonitoredStopVisit": [
+      {
+       "RecordedAtTime": "2026-11-09T23:04:18.021Z",
+       "ItemIdentifier": "RATP-SIV:Item::20261109.443.R.C01371.PALS.IDFM.C01371.R.RATP.50026016:LOC",
+       "MonitoringRef": {
+        "value": "STIF:StopPoint:Q:22087:"
+       },
+       "MonitoredVehicleJourney": {
+        "LineRef": {
+         "value": "STIF:Line::C01371:"
+        },
+        "OperatorRef": {
+         "value": "RATP-SIV:Operator::RATP.OCTAVE.1.1:"
+        },
+        "FramedVehicleJourneyRef": {
+         "DataFrameRef": {
+          "value": "any"
+         },
+         "DatedVehicleJourneyRef": "RATP-SIV:VehicleJourney::20261109.443.R.C01371:LOC"
+        },
+        "DirectionName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ],
+        "DestinationRef": {
+         "value": "STIF:StopPoint:Q:22104:"
+        },
+        "DestinationName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ],
+        "VehicleJourneyName": [],
+        "JourneyNote": [],
+        "MonitoredCall": {
+         "StopPointName": [
+          {
+           "value": "Châtelet"
+          }
+         ],
+         "VehicleAtStop": false,
+         "DestinationDisplay": [
+          {
+           "value": "Château de Vincennes"
+          }
+         ],
+         "ExpectedArrivalTime": "2026-11-09T23:24:18.021Z",
+         "ExpectedDepartureTime": "2026-11-09T23:24:18.021Z",
+         "DepartureStatus": "onTime",
+         "ArrivalStatus": ""
+        },
+        "TrainNumbers": {
+         "TrainNumberRef": []
+        },
+        "VehicleFeatureRef": [],
+        "DirectionRef": {
+         "value": "Retour"
+        },
+        "DestinationShortName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ]
+       }
+      },
+      {
+       "RecordedAtTime": "2026-11-09T23:09:17.186Z",
+       "ItemIdentifier": "RATP-SIV:Item::20261109.444.R.C01371.PALS.IDFM.C01371.R.RATP.50026016:LOC",
+       "MonitoringRef": {
+        "value": "STIF:StopPoint:Q:22087:"
+       },
+       "MonitoredVehicleJourney": {
+        "LineRef": {
+         "value": "STIF:Line::C01371:"
+        },
+        "OperatorRef": {
+         "value": "RATP-SIV:Operator::RATP.OCTAVE.1.1:"
+        },
+        "FramedVehicleJourneyRef": {
+         "DataFrameRef": {
+          "value": "any"
+         },
+         "DatedVehicleJourneyRef": "RATP-SIV:VehicleJourney::20261109.444.R.C01371:LOC"
+        },
+        "DirectionName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ],
+        "DestinationRef": {
+         "value": "STIF:StopPoint:Q:22104:"
+        },
+        "DestinationName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ],
+        "VehicleJourneyName": [],
+        "JourneyNote": [],
+        "MonitoredCall": {
+         "StopPointName": [
+          {
+           "value": "Châtelet"
+          }
+         ],
+         "VehicleAtStop": false,
+         "DestinationDisplay": [
+          {
+           "value": "Château de Vincennes"
+          }
+         ],
+         "ExpectedArrivalTime": "2026-11-09T23:29:17.186Z",
+         "ExpectedDepartureTime": "2026-11-09T23:29:17.186Z",
+         "DepartureStatus": "onTime",
+         "ArrivalStatus": ""
+        },
+        "TrainNumbers": {
+         "TrainNumberRef": []
+        },
+        "VehicleFeatureRef": [],
+        "DirectionRef": {
+         "value": "Retour"
+        },
+        "DestinationShortName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ]
+       }
+      },
+      {
+       "RecordedAtTime": "2026-11-09T23:14:18.758Z",
+       "ItemIdentifier": "RATP-SIV:Item::20261109.445.R.C01371.PALS.IDFM.C01371.R.RATP.50026016:LOC",
+       "MonitoringRef": {
+        "value": "STIF:StopPoint:Q:22087:"
+       },
+       "MonitoredVehicleJourney": {
+        "LineRef": {
+         "value": "STIF:Line::C01371:"
+        },
+        "OperatorRef": {
+         "value": "RATP-SIV:Operator::RATP.OCTAVE.1.1:"
+        },
+        "FramedVehicleJourneyRef": {
+         "DataFrameRef": {
+          "value": "any"
+         },
+         "DatedVehicleJourneyRef": "RATP-SIV:VehicleJourney::20261109.445.R.C01371:LOC"
+        },
+        "DirectionName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ],
+        "DestinationRef": {
+         "value": "STIF:StopPoint:Q:22104:"
+        },
+        "DestinationName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ],
+        "VehicleJourneyName": [],
+        "JourneyNote": [],
+        "MonitoredCall": {
+         "StopPointName": [
+          {
+           "value": "Châtelet"
+          }
+         ],
+         "VehicleAtStop": false,
+         "DestinationDisplay": [
+          {
+           "value": "Château de Vincennes"
+          }
+         ],
+         "ExpectedArrivalTime": "2026-11-09T23:34:18.758Z",
+         "ExpectedDepartureTime": "2026-11-09T23:34:18.758Z",
+         "DepartureStatus": "onTime",
+         "ArrivalStatus": ""
+        },
+        "TrainNumbers": {
+         "TrainNumberRef": []
+        },
+        "VehicleFeatureRef": [],
+        "DirectionRef": {
+         "value": "Retour"
+        },
+        "DestinationShortName": [
+         {
+          "value": "Château de Vincennes"
+         }
+        ]
+       }
+      },
+      {
+       "RecordedAtTime": "2026-11-09T23:01:44.593Z",
+       "ItemIdentifier": "RATP-SIV:Item::20261109.424.A.C01374.PALS.IDFM.C01374.A.RATP.50026817:LOC",
+       "MonitoringRef": {
+        "value": "STIF:StopPoint:Q:22092:"
+       },
+       "MonitoredVehicleJourney": {
+        "LineRef": {
+         "value": "STIF:Line::C01374:"
+        },
+        "OperatorRef": {
+         "value": "RATP-SIV:Operator::RATP.OCTAVE.4.4:"
+        },
+        "FramedVehicleJourneyRef": {
+         "DataFrameRef": {
+          "value": "any"
+         },
+         "DatedVehicleJourneyRef": "RATP-SIV:VehicleJourney::20261109.424.A.C01374:LOC"
+        },
+        "DirectionName": [
+         {
+          "value": "Bagneux–Lucie Aubrac"
+         }
+        ],
+        "DestinationRef": {
+         "value": "STIF:StopPoint:Q:483314:"
+        },
+        "DestinationName": [
+         {
+          "value": "Bagneux - Lucie Aubrac"
+         }
+        ],
+        "VehicleJourneyName": [],
+        "JourneyNote": [],
+        "MonitoredCall": {
+         "StopPointName": [
+          {
+           "value": "Châtelet"
+          }
+         ],
+         "VehicleAtStop": false,
+         "DestinationDisplay": [
+          {
+           "value": "Bagneux - Lucie Aubrac"
+          }
+         ],
+         "ExpectedArrivalTime": "2026-11-09T23:20:44.593Z",
+         "ExpectedDepartureTime": "2026-11-09T23:20:44.593Z",
+         "DepartureStatus": "onTime",
+         "ArrivalStatus": ""
+        },
+        "TrainNumbers": {
+         "TrainNumberRef": []
+        },
+        "VehicleFeatureRef": [],
+        "DirectionRef": {
+         "value": "Aller"
+        },
+        "DestinationShortName": [
+         {
+          "value": "Bagneux - Lucie Aubrac"
+         }
+        ]
+       }
+      },
+      {
+       "RecordedAtTime": "2026-11-09T23:05:37.987Z",
+       "ItemIdentifier": "RATP-SIV:Item::20261109.425.A.C01374.PALS.IDFM.C01374.A.RATP.50026817:LOC",
+       "MonitoringRef": {
+        "value": "STIF:StopPoint:Q:22092:"
+       },
+       "MonitoredVehicleJourney": {
+        "LineRef": {
+         "value": "STIF:Line::C01374:"
+        },
+        "OperatorRef": {
+         "value": "RATP-SIV:Operator::RATP.OCTAVE.4.4:"
+        },
+        "FramedVehicleJourneyRef": {
+         "DataFrameRef": {
+          "value": "any"
+         },
+         "DatedVehicleJourneyRef": "RATP-SIV:VehicleJourney::20261109.425.A.C01374:LOC"
+        },
+        "DirectionName": [
+         {
+          "value": "Bagneux–Lucie Aubrac"
+         }
+        ],
+        "DestinationRef": {
+         "value": "STIF:StopPoint:Q:483314:"
+        },
+        "DestinationName": [
+         {
+          "value": "Bagneux - Lucie Aubrac"
+         }
+        ],
+        "VehicleJourneyName": [],
+        "JourneyNote": [],
+        "MonitoredCall": {
+         "StopPointName": [
+          {
+           "value": "Châtelet"
+          }
+         ],
+         "VehicleAtStop": false,
+         "DestinationDisplay": [
+          {
+           "value": "Bagneux - Lucie Aubrac"
+          }
+         ],
+         "ExpectedArrivalTime": "2026-11-09T23:25:37.987Z",
+         "ExpectedDepartureTime": "2026-11-09T23:25:37.987Z",
+         "DepartureStatus": "onTime",
+         "ArrivalStatus": ""
+        },
+        "TrainNumbers": {
+         "TrainNumberRef": []
+        },
+        "VehicleFeatureRef": [],
+        "DirectionRef": {
+         "value": "Aller"
+        },
+        "DestinationShortName": [
+         {
+          "value": "Bagneux - Lucie Aubrac"
+         }
+        ]
+       }
+      },
+      {
+       "RecordedAtTime": "2026-11-09T23:10:39.174Z",
+       "ItemIdentifier": "RATP-SIV:Item::20261109.426.A.C01374.PALS.IDFM.C01374.A.RATP.50026817:LOC",
+       "MonitoringRef": {
+        "value": "STIF:StopPoint:Q:22092:"
+       },
+       "MonitoredVehicleJourney": {
+        "LineRef": {
+         "value": "STIF:Line::C01374:"
+        },
+        "OperatorRef": {
+         "value": "RATP-SIV:Operator::RATP.OCTAVE.4.4:"
+        },
+        "FramedVehicleJourneyRef": {
+         "DataFrameRef": {
+          "value": "any"
+         },
+         "DatedVehicleJourneyRef": "RATP-SIV:VehicleJourney::20261109.426.A.C01374:LOC"
+        },
+        "DirectionName": [
+         {
+          "value": "Bagneux–Lucie Aubrac"
+         }
+        ],
+        "DestinationRef": {
+         "value": "STIF:StopPoint:Q:483314:"
+        },
+        "DestinationName": [
+         {
+          "value": "Bagneux - Lucie Aubrac"
+         }
+        ],
+        "VehicleJourneyName": [],
+        "JourneyNote": [],
+        "MonitoredCall": {
+         "StopPointName": [
+          {
+           "value": "Châtelet"
+          }
+         ],
+         "VehicleAtStop": false,
+         "DestinationDisplay": [
+          {
+           "value": "Bagneux - Lucie Aubrac"
+          }
+         ],
+         "ExpectedArrivalTime": "2026-11-09T23:30:39.174Z",
+         "ExpectedDepartureTime": "2026-11-09T23:30:39.174Z",
+         "DepartureStatus": "onTime",
+         "ArrivalStatus": ""
+        },
+        "TrainNumbers": {
+         "TrainNumberRef": []
+        },
+        "VehicleFeatureRef": [],
+        "DirectionRef": {
+         "value": "Aller"
+        },
+        "DestinationShortName": [
+         {
+          "value": "Bagneux - Lucie Aubrac"
+         }
+        ]
+       }
+      }
+     ],
+     "StopLineNotice": [],
+     "ServiceException": []
+    }
+   ]
+  }
+ }
+}

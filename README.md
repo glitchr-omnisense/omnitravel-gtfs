@@ -13,7 +13,9 @@ imported into a store of its own (an SQLite file or MySQL, through PDO), and its
   delays, cancellations and skipped stops of the network's trip updates when it publishes them;
 - **vehicles** (`TrackingInterface`): the positions of its vehicle feed, each with its line;
 - **service alerts** (`alerts()`): the GTFS-Realtime alerts in force that concern a board's lines
-  and stops, their texts by language.
+  and stops, their texts by language;
+- **SIRI Lite**, for networks that publish SIRI rather than GTFS-Realtime (Île-de-France Mobilités'
+  PRIM, Strasbourg's CTS): StopMonitoring laid over the timetable, GeneralMessage as alerts.
 
 ```php
 use Omnitravel\Gtfs\{Feed, GtfsFactory, Importer};

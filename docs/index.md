@@ -60,6 +60,10 @@ calls): an application's migrations leave it alone.
 | `trip_updates_url` | none | its GTFS-Realtime trip updates: delays, cancellations, skipped stops |
 | `vehicle_positions_url` | none | its GTFS-Realtime vehicle positions |
 | `alerts_url` | none | its GTFS-Realtime service alerts (`alerts()`; a combined feed's alerts are read from `trip_updates_url` too) |
+| `siri_stop_monitoring_url`, `siri_general_message_url` | none | a network's SIRI Lite (SIRI 2.0 as JSON): StopMonitoring laid over the timetable, GeneralMessage as alerts |
+| `siri_headers` | `[]` | sent with the SIRI requests: the key, given by reference (PRIM: `apikey`; CTS: `Authorization: Basic` with the token as user) |
+| `siri_stop_ref`, `siri_stop_area_ref`, `siri_line_ref` | `{id}`, none, `{id}` | how a GTFS identifier is written in SIRI, `{id}` standing for it without `siri_prefix` (IDFM: `STIF:StopPoint:Q:{id}:`, `STIF:StopArea:SP:{id}:`, `STIF:Line::{id}:`) |
+| `siri_prefix` | `""` | the GTFS identifiers' prefix `{id}` leaves out (IDFM: `IDFM:`) |
 | `realtime_headers` | `[]` | sent with the real-time requests (a key, where the network asks one) |
 | `user_agent` | `omnitravel-gtfs/1.0` | the real-time requests' User-Agent |
 | `realtime_ttl` | 30 | seconds a real-time read is kept |
@@ -103,6 +107,18 @@ extended); `area` the box of the feed's stops; `keyless`.
   only. Calls scheduled up to 30 minutes before the moment asked are read too, so a late vehicle is
   still listed. When the feed cannot be read, the timetable is answered without it and
   `realtimeError()` says why.
+- **SIRI Lite** (`Siri\SiriLite`), for networks that publish SIRI rather than GTFS-Realtime
+  (Île-de-France Mobilités' PRIM, Strasbourg's CTS): a stop is asked by `siri_stop_ref`, a station
+  by `siri_stop_area_ref` (by each of its platforms without one), and its `MonitoredStopVisit`s are
+  read back into the feed's identifiers (`LineRef` and `MonitoringRef` through the same templates).
+  For each line and platform SIRI announces, its visits replace that line's scheduled calls at that
+  platform up to the last visit announced (a minute's margin), and the timetable goes on after it;
+  another platform or another line keeps its timetable. A visit's time is SIRI's expected one; its
+  scheduled time is the aimed one when SIRI gives it (PRIM's metro gives none: no delay is made
+  up); `DepartureStatus: cancelled` cancels it. A `GeneralMessage` is a `ServiceAlert` of its lines
+  and stop points (`SHORT_MESSAGE` its header, the others its description, `ValidUntilTime` its end,
+  `InfoChannelRef: Perturbation` a warning), asked per line and kept at least two minutes. When
+  SIRI cannot be read (no key: 401), the timetable stays and `realtimeError()` says why.
 - **Service alerts** (`alerts($lines, $stops, $at)`, a `ServiceAlert` each): read from `alerts_url`
   and from the alerts a combined feed carries beside its trip updates, once per `realtime_ttl`. An
   alert is kept when it is in force at the moment (one of its `active_period`s, or always when it
@@ -130,7 +146,10 @@ the timetable: see `realtimeError()`); `PDOException` from the store as PDO thro
   cancellation, a skipped stop, a time rather than a delay, a deleted entity, alerts in two
   languages with periods, a station, a trip and an agency); three feeds of Angers' Irigo network
   (ODbL) recorded on 2026-11-09 at 12:54 UTC (trip updates, vehicle positions) and 2026-11-10
-  (alerts, from notify.ratpdev.com) and read whole; Angers' and Dijon's
+  (alerts, from notify.ratpdev.com) and read whole; SIRI Lite answers written for the fixture feed
+  (a delay, a cancellation without an aimed time, a platform left alone, a 401) and Île-de-France
+  Mobilités' PRIM StopMonitoring for Châtelet and GeneralMessage for metro line 1 recorded on
+  2026-11-09 at 23:18 UTC, the key left out; Angers' and Dijon's
   static feeds imported and read in the harness (above).
 - Not verified: a store in MySQL (the SQL is written for both; the site and the tests run on
   SQLite), `frequencies.txt` networks (their trips are read as their first run only), feeds over
