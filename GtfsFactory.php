@@ -13,8 +13,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * GtfsProvider's factory: "gtfs", one feed of a store.
  *
  * Options: feed (required: its name in the store), dsn (required: "sqlite:/path/gtfs.sqlite",
- * "mysql:host=...;dbname=..."), user, password; trip_updates_url and vehicle_positions_url (its
- * GTFS-Realtime feeds), realtime_headers (sent with them: a key, where the network asks one),
+ * "mysql:host=...;dbname=..."), user, password; trip_updates_url, vehicle_positions_url and
+ * alerts_url (its GTFS-Realtime feeds), realtime_headers (sent with them: a key, where the network asks one),
  * realtime_ttl (seconds a real-time read is kept, 30), realtime_cache (a folder where it is kept
  * between requests); timezone (the agency's otherwise), title, attribution, licence, countries.
  *
@@ -50,7 +50,7 @@ final class GtfsFactory extends ProviderFactory
 
     protected function build(Config $c): ProviderInterface
     {
-        $realtime = null !== $c->string('trip_updates_url') || null !== $c->string('vehicle_positions_url');
+        $realtime = null !== $c->string('trip_updates_url') || null !== $c->string('vehicle_positions_url') || null !== $c->string('alerts_url');
         $headers = $c->get('realtime_headers');
         $headers = \is_array($headers) ? array_filter(array_map(static fn ($v) => \is_scalar($v) ? (string) $v : null, $headers), static fn ($v, $k) => null !== $v && \is_string($k), \ARRAY_FILTER_USE_BOTH) : [];
         $countries = $c->get('countries');
@@ -69,6 +69,7 @@ final class GtfsFactory extends ProviderFactory
             $c->string('attribution'),
             $c->string('licence'),
             array_values(array_filter(array_map(static fn ($country) => \is_string($country) ? strtoupper(trim($country)) : '', $countries))),
+            alertsUrl: $c->string('alerts_url'),
         );
     }
 }

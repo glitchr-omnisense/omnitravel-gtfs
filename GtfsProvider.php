@@ -70,6 +70,7 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         private readonly ?string $licence = null,
         private readonly array $countries = [],
         private readonly string $name = 'gtfs',
+        private readonly ?string $alertsUrl = null,
     ) {
     }
 
@@ -107,6 +108,33 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         $row = $this->feedRow();
 
         return [] === $row ? null : FeedInfo::fromRow($row);
+    }
+
+    /**
+     * The service alerts in force at a moment (now by default) that concern
+     * a board: one of the lines, one of the stops (a station and its
+     * platforms are one), the whole network; every one in force when
+     * neither lines nor stops are given. Read from the network's
+     * GTFS-Realtime Alerts feed (alerts_url) and from the alerts a combined
+     * feed carries beside its trip updates.
+     *
+     * @param list<string> $lines GTFS route identifiers
+     * @param list<string> $stops GTFS stop identifiers
+     *
+     * @return list<ServiceAlert>
+     */
+    public function alerts(array $lines = [], array $stops = [], ?\DateTimeImmutable $at = null): array
+    {
+        $found = [];
+        foreach (array_unique(array_filter([$this->alertsUrl, $this->tripUpdatesUrl])) as $url) {
+            foreach ($this->realtimeFeed($url)->alerts ?? [] as $alert) {
+                $found[$alert->id.'|'.$alert->headerText()] = $alert;
+            }
+        }
+        $moment = ($at ?? new \DateTimeImmutable())->getTimestamp();
+        $stops = $this->stopFamily($stops);
+
+        return array_values(array_filter($found, static fn (ServiceAlert $alert) => $alert->activeAt($moment) && (([] === $lines && [] === $stops) || $alert->concerns($lines, $stops))));
     }
 
     /** Why the last real-time read failed, null when it did not: departures then come from the timetable alone. */
@@ -348,6 +376,30 @@ final class GtfsProvider implements TimetablesInterface, TrackingInterface, Netw
         }
 
         return isset($stops[$id]) ? $stops : [];
+    }
+
+    /**
+     * Stops with their station and the station's other platforms: an alert
+     * on a station concerns each of its platforms, and the other way round.
+     *
+     * @param list<string> $ids
+     *
+     * @return list<string>
+     */
+    private function stopFamily(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+        $family = array_fill_keys($ids, true);
+        foreach ($this->store->rows('SELECT stop_id, parent FROM gtfs_stop WHERE feed = ? AND (stop_id IN ('.Store::marks($ids).') OR parent IN ('.Store::marks($ids).'))', [$this->feed, ...$ids, ...$ids]) as $row) {
+            $family[Cast::string($row['stop_id'])] = true;
+            if (null !== $parent = self::text($row['parent'] ?? null)) {
+                $family[$parent] = true;
+            }
+        }
+
+        return array_map('strval', array_keys($family));
     }
 
     /** @param list<TripUpdate> $updates */

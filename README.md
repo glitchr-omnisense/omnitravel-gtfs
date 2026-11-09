@@ -11,7 +11,9 @@ imported into a store of its own (an SQLite file or MySQL, through PDO), and its
 - **a stop's timetable** (`TimetablesInterface`): its next departures and arrivals - a station's from
   all its platforms - from the feed's calendars, past midnight included (a trip at 25:10), with the
   delays, cancellations and skipped stops of the network's trip updates when it publishes them;
-- **vehicles** (`TrackingInterface`): the positions of its vehicle feed, each with its line.
+- **vehicles** (`TrackingInterface`): the positions of its vehicle feed, each with its line;
+- **service alerts** (`alerts()`): the GTFS-Realtime alerts in force that concern a board's lines
+  and stops, their texts by language.
 
 ```php
 use Omnitravel\Gtfs\{Feed, GtfsFactory, Importer};

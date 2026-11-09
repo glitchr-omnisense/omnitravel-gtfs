@@ -59,6 +59,7 @@ calls): an application's migrations leave it alone.
 | `user`, `password` | none | the database's |
 | `trip_updates_url` | none | its GTFS-Realtime trip updates: delays, cancellations, skipped stops |
 | `vehicle_positions_url` | none | its GTFS-Realtime vehicle positions |
+| `alerts_url` | none | its GTFS-Realtime service alerts (`alerts()`; a combined feed's alerts are read from `trip_updates_url` too) |
 | `realtime_headers` | `[]` | sent with the real-time requests (a key, where the network asks one) |
 | `user_agent` | `omnitravel-gtfs/1.0` | the real-time requests' User-Agent |
 | `realtime_ttl` | 30 | seconds a real-time read is kept |
@@ -102,6 +103,15 @@ extended); `area` the box of the feed's stops; `keyless`.
   only. Calls scheduled up to 30 minutes before the moment asked are read too, so a late vehicle is
   still listed. When the feed cannot be read, the timetable is answered without it and
   `realtimeError()` says why.
+- **Service alerts** (`alerts($lines, $stops, $at)`, a `ServiceAlert` each): read from `alerts_url`
+  and from the alerts a combined feed carries beside its trip updates, once per `realtime_ttl`. An
+  alert is kept when it is in force at the moment (one of its `active_period`s, or always when it
+  has none) and concerns the board: an entity naming one of the lines, one of the stops (a station
+  and its platforms are one), both when it names both, a trip of one of the lines, or the whole
+  network (an agency, a route type). Its texts by language (`headerText()`, `descriptionText()`,
+  `urlFor()`: the language asked, then French, English, the first given); `cause`, `effect`,
+  `severity` as GTFS-Realtime's names in kebab case (`construction`, `no-service`, `warning`).
+  The body is read whatever its `Content-Type` (Angers' alerts come as `application/json`).
 - **Vehicles**: positions at 0,0 (no fix) are left out; the line comes from the trip descriptor's
   route, or from the trip in the feed.
 
@@ -117,8 +127,10 @@ the timetable: see `realtimeError()`); `PDOException` from the store as PDO thro
 - Verified: the fixture feed (a station of two platforms, a tram and a bus line, a night trip past
   midnight, a holiday, a service added by date) imported from a folder and from a deflated zip
   read with zlib alone; real-time feeds written with `WireWriter` (a delay propagated, a
-  cancellation, a skipped stop, a time rather than a delay, a deleted entity); two feeds of Angers'
-  Irigo network (ODbL) recorded on 2026-11-09 at 12:54 UTC and read whole; Angers' and Dijon's
+  cancellation, a skipped stop, a time rather than a delay, a deleted entity, alerts in two
+  languages with periods, a station, a trip and an agency); three feeds of Angers' Irigo network
+  (ODbL) recorded on 2026-11-09 at 12:54 UTC (trip updates, vehicle positions) and 2026-11-10
+  (alerts, from notify.ratpdev.com) and read whole; Angers' and Dijon's
   static feeds imported and read in the harness (above).
 - Not verified: a store in MySQL (the SQL is written for both; the site and the tests run on
   SQLite), `frequencies.txt` networks (their trips are read as their first run only), feeds over
