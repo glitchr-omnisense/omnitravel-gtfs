@@ -52,6 +52,13 @@ final class EstimateTest extends GtfsTestCase
         self::assertEqualsWithDelta(0.005, $quarter->coordinates->latitude, 1e-4);
         self::assertEqualsWithDelta(0.0, (float) $quarter->bearing, 0.1, 'heading north on the first leg');
 
+        // A shape that wanders far between the two stops (a detour the trip does not take): the straight line.
+        $wandering = [[0.0, 0.0], [0.1, 0.0], [0.1, 0.1], [0.01, 0.01]];
+        $detour = PositionEstimator::estimate($calls, 50, $wandering);
+        self::assertNotNull($detour);
+        self::assertFalse($detour->onShape);
+        self::assertEqualsWithDelta(0.005, $detour->coordinates->latitude, 1e-9);
+
         $straight = PositionEstimator::estimate($calls, 50, []);
         self::assertNotNull($straight);
         self::assertEqualsWithDelta(0.005, $straight->coordinates->latitude, 1e-9);

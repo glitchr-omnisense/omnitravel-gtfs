@@ -18,7 +18,9 @@ use Omnitravel\Model\Coordinates;
  * of the way, clamped to 0..1, the way measured along the shape: each stop
  * is projected onto the shape (in order, never backwards), the distance
  * between the two projections cut at the fraction. Without a shape, or when
- * the projections run backwards, on the straight line between the stops.
+ * the projections run backwards - or the shape wanders between them, over
+ * three times their distance and half a kilometre more (a feed's shape that
+ * takes a detour the trip does not) - on the straight line between the stops.
  * Before its first departure and after its last arrival there is no
  * vehicle (null).
  */
@@ -73,7 +75,8 @@ final class PositionEstimator
                 }
             }
             [$start, $end] = [$positions[$i], $positions[$i + 1]];
-            if ($end > $start) {
+            $direct = $a->coordinates->distanceTo($b->coordinates);
+            if ($end > $start && $end - $start <= 3 * $direct + 500) {
                 $target = $start + $fraction * ($end - $start);
                 [$point, $bearing] = self::at($shape, $along, $target);
 
