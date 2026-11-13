@@ -19,6 +19,47 @@ imported into a store of its own (an SQLite file or MySQL, through PDO), and its
 - **SIRI Lite**, for networks that publish SIRI rather than GTFS-Realtime (Île-de-France Mobilités'
   PRIM, Strasbourg's CTS): StopMonitoring laid over the timetable, GeneralMessage as alerts.
 
+## Install and a first call
+
+```sh
+composer require omnitravel/gtfs
+```
+
+No account and no network: a one-line feed written by the script, imported into SQLite in memory,
+then the stops near a point and a stop's next departures. A real network's feed is the zip it
+publishes, imported into an SQLite file or MySQL, again whenever the network publishes a new one.
+
+```php
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Omnitravel\Gtfs\{Feed, GtfsFactory, Importer};
+use Omnitravel\Model\{Coordinates, DepartureQuery};
+
+$dir = sys_get_temp_dir().'/gtfs-first-call';
+@mkdir($dir);
+file_put_contents("$dir/agency.txt", "agency_id,agency_name,agency_url,agency_timezone\nX,Example Transit,https://transit.example.org,Europe/Paris\n");
+file_put_contents("$dir/stops.txt", "stop_id,stop_name,stop_lat,stop_lon\nGARE,Gare,47.4645,-0.5567\nRALL,Ralliement,47.4712,-0.5518\n");
+file_put_contents("$dir/routes.txt", "route_id,agency_id,route_short_name,route_type,route_color\nA,X,A,0,379E32\n");
+file_put_contents("$dir/trips.txt", "route_id,service_id,trip_id,trip_headsign\nA,DAILY,A-1,Ralliement\nA,DAILY,A-2,Ralliement\n");
+file_put_contents("$dir/stop_times.txt", "trip_id,arrival_time,departure_time,stop_id,stop_sequence\nA-1,08:00:00,08:00:00,GARE,1\nA-1,08:06:00,08:06:00,RALL,2\nA-2,08:15:00,08:15:00,GARE,1\nA-2,08:21:00,08:21:00,RALL,2\n");
+file_put_contents("$dir/calendar.txt", "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\nDAILY,1,1,1,1,1,1,1,20260101,20361231\n");
+
+$factory = new GtfsFactory();                               // an HTTP client is needed for real-time feeds only
+(new Importer($factory->store('sqlite::memory:')))->import(new Feed($dir), 'example');
+$network = $factory->create(['feed' => 'example', 'dsn' => 'sqlite::memory:']);
+
+$stop = $network->nearby(new Coordinates(47.4646, -0.5566), 300)[0];
+echo $stop->name, "\n";                                     // Gare
+$from = new DateTimeImmutable('tomorrow 07:30', new DateTimeZone('Europe/Paris'));
+foreach ($network->departures(new DepartureQuery($stop->id, $from, limit: 2)) as $departure) {
+    echo $departure->time()->format('H:i'), ' ', $departure->line?->name, ' to ', $departure->headsign, "\n";   // 08:00 A to Ralliement, 08:15 ...
+}
+```
+
+With a network's real feed and its GTFS-Realtime trip updates:
+
 ```php
 use Omnitravel\Gtfs\{Feed, GtfsFactory, Importer};
 use Omnitravel\Model\{Coordinates, DepartureQuery};
